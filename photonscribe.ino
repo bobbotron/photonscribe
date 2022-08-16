@@ -11,7 +11,7 @@
 #define BUTTON_3 A2
 #define BUTTON_4 A3
 
-#define MODES 1
+#define MODES 5
 
 CRGB leds[NUM_LEDS];
 
@@ -103,11 +103,11 @@ void loop()
     {
       RandoGoldLED();
     }
+//    if (mode == 4)
+//    {
+//      CautionTape();
+//    }
     if (mode == 4)
-    {
-      CautionTape();
-    }
-    if (mode == 5)
     {
       EyeImg();
     }
@@ -132,7 +132,7 @@ void loop()
           
           FastLED.show();
           mode++;
-          if (mode == 6)
+          if (mode == MODES)
           {
             mode = 0;
           }
@@ -294,30 +294,30 @@ void blackOut()
     }
 }
 
-void CautionTape()
-{
-  int key1S = digitalRead(BUTTON_1);// read if key1 is pressed
-  if(!key1S){
-    cautionCounter++;
-  
-    for (int i=0; i< NUM_LEDS; i++)
-    {
-      unsigned ccl = ((i*2) + cautionCounter) % 200;
-      if (ccl < 100)
-      {
-        leds[i]= CRGB::Black;
-      }
-      else
-      {
-        leds[i].setRGB(255, 237, 0);
-      }
-    }
-  }
-  else 
-  {
-    blackOut();
-  }
-}
+//void CautionTape()
+//{
+//  int key1S = digitalRead(BUTTON_1);// read if key1 is pressed
+//  if(!key1S){
+//    cautionCounter++;
+//  
+//    for (int i=0; i< NUM_LEDS; i++)
+//    {
+//      unsigned ccl = ((i*2) + cautionCounter) % 200;
+//      if (ccl < 100)
+//      {
+//        leds[i]= CRGB::Black;
+//      }
+//      else
+//      {
+//        leds[i].setRGB(255, 237, 0);
+//      }
+//    }
+//  }
+//  else 
+//  {
+//    blackOut();
+//  }
+//}
 
 int eyeIndex = -1;
 
@@ -638,9 +638,4 @@ void EyeImg()
     }
   }
 }
-
-
-
-
-
 
