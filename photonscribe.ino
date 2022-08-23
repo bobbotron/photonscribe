@@ -36,6 +36,8 @@ int cylon = 0;
 int cylonAdder = 1;
 
 unsigned cautionCounter = 0;
+int cautionIntro = 0;
+#define CAUTION_INTRO_PIXELS 20
 
 /**
  *  There are 4 buttons in the circuit, saves creating
@@ -122,7 +124,8 @@ void loop()
     }
     if (mode == 5)
     {
-      imageRender(FLIPPY_IMG_WIDTH, FLIPPY_IMG_HEIGHT, flippy_img);
+      // imageRender(FLIPPY_IMG_WIDTH, FLIPPY_IMG_HEIGHT, flippy_img);
+      imageRender(NGPC_IMG_WIDTH, NGPC_IMG_HEIGHT, ngpc_image);
     }
 //    if (mode == 6)
 //    {
@@ -167,7 +170,9 @@ void loop()
 void RandoLED()
 {
   for( int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CHSV( 0, 0, max(0, random8(255) + fade));
+    int distanceToEnd = i < (NUM_LEDS / 2) ? i : NUM_LEDS - i - 1;
+    int rounder = distanceToEnd > 10 ? 0 : - ( (10 - distanceToEnd)  * 20 );
+    leds[i] = CHSV( 0, 0, max(0, random8(255) + fade + rounder));
   }
 
     const long t = millis();
@@ -175,11 +180,11 @@ void RandoLED()
       int key1S = digitalRead(BUTTON_1);// read if key1 is pressed
        if(!key1S){
         // fade in
-        fade = min(0, fade + 2);
+        fade = min(0, fade + 5);
        }
        else{
         // fade out
-        fade = max(-255, fade - 2);
+        fade = max(-255, fade - 5);
        }
 
        buttons[0].lastUpdate = t;
@@ -290,6 +295,10 @@ void Cylon()
       }
       else
       {
+        if (random8() < 2)
+        {
+          leds[i] = CHSV( random8(), 255, random8(50) + 205);
+        }
         //leds[i] = CHSV( 0, 0, 0);
       }
     }
@@ -314,26 +323,54 @@ void CautionTape()
 {
   int key1S = digitalRead(BUTTON_1);// read if key1 is pressed
   if(!key1S){
-    cautionCounter++;
-    int midpoint = (int) (NUM_LEDS/2);
-    for (int i=0; i< midpoint; i++)
+    if (cautionIntro < CAUTION_INTRO_PIXELS)
     {
-      unsigned ccl = ((i*2) + cautionCounter) % 200;
-      if (ccl < 100)
-      {
-        leds[i] = CRGB::Black;
-        leds[NUM_LEDS - i -1 ] = CRGB::Black;
-      }
-      else
+      cautionIntro++;
+      for (int i=0; i< NUM_LEDS; i++)
       {
         leds[i].setRGB(255, 237, 0);
-        leds[NUM_LEDS - i -1 ].setRGB(255, 237, 0);
+      }
+    }
+    else
+    {
+      cautionCounter++;
+      int midpoint = (int) (NUM_LEDS/2);
+      for (int i=0; i< midpoint; i++)
+      {
+        unsigned ccl = ((i*2) + cautionCounter) % 180;
+        if (ccl < 90)
+        {
+          leds[i] = CRGB::Black;
+          leds[NUM_LEDS - i -1 ] = CRGB::Black;
+        }
+        else
+        {
+          leds[i].setRGB(255, 237, 0);
+          leds[NUM_LEDS - i -1 ].setRGB(255, 237, 0);
+        }
+      }
+      leds[0].setRGB(255, 237, 0);
+      leds[NUM_LEDS-1].setRGB(255, 237, 0);
+      if (NUM_LEDS % 2 == 1)
+      {
+        leds[midpoint] = leds[midpoint-1];
       }
     }
   }
   else
   {
-    blackOut();
+    if (cautionIntro > 0)
+    {
+      for (int i=0; i< NUM_LEDS; i++)
+      {
+        leds[i].setRGB(255, 237, 0);
+      }
+      cautionIntro--;
+    }
+    else
+    {
+      blackOut();
+    }
   }
 }
 
@@ -377,81 +414,4 @@ void imageRender(int width, int height, const uint16_t * imgArray)
     }
   } 
 }
-//
-//void EyeImg()
-//{
-//  if (imgIndex == -1)
-//  {
-//    int key1S = digitalRead(BUTTON_1);
-//    if (buttons[0].currentState != key1S) {
-//      buttons[0].currentState = key1S;
-//
-//      if (!key1S)
-//      {
-//        imgIndex = 0;
-//      }
-//    }
-//  }
-//  else
-//  {
-//    // slow things down a little bit
-//    FastLED.delay(10);
-//    if (imgIndex == EYE_IMG_WIDTH)
-//    {
-//      // reset the image
-//      imgIndex = -1;
-//      blackOut();
-//    }
-//    else
-//    {
-//      for (int i = 0; i< EYE_IMG_HEIGHT; i++)
-//      {
-//        //pgm_read_word(&tv[j])
-//        uint16_t indexVal = pgm_read_word(&eye_map[START_OF_IMG_CONTENT + (i*EYE_IMG_WIDTH) + imgIndex]);
-//        leds[i].setRGB(pgm_read_word(&eye_map[indexVal*4]), pgm_read_word(&eye_map[(indexVal*4) + 1]), pgm_read_word(&eye_map[(indexVal*4) + 2]));
-//      }
-//
-//      imgIndex++;
-//    }
-//  }
-//}
 
-
-
-//void FlippyImg()
-//{
-//  if (imgIndex == -1)
-//  {
-//    int key1S = digitalRead(BUTTON_1);
-//    if (buttons[0].currentState != key1S) {
-//      buttons[0].currentState = key1S;
-//
-//      if (!key1S)
-//      {
-//        imgIndex = 0;
-//      }
-//    }
-//  }
-//  else
-//  {
-//    // slow things down a little bit
-//    FastLED.delay(10);
-//    if (imgIndex == FLIPPY_IMG_WIDTH)
-//    {
-//      // reset the image
-//      imgIndex = -1;
-//      blackOut();
-//    }
-//    else
-//    {
-//      for (int i = 0; i< FLIPPY_IMG_HEIGHT; i++)
-//      {
-//        //pgm_read_word(&tv[j])
-//        uint16_t indexVal = pgm_read_word(&flippy_img[START_OF_IMG_CONTENT + (i*FLIPPY_IMG_WIDTH) + imgIndex]);
-//        leds[i].setRGB(pgm_read_word(&flippy_img[indexVal*4]), pgm_read_word(&flippy_img[(indexVal*4) + 1]), pgm_read_word(&flippy_img[(indexVal*4) + 2]));
-//      }
-//
-//      imgIndex++;
-//    }
-//  }
-//}
