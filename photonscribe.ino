@@ -1,7 +1,5 @@
 #include <FastLED.h>
 #include "./Flippy.h"
-#include "./Eye.h"
-#include "./NGPC.h"
 
 #define LED_PIN     6
 #define NUM_LEDS    41
@@ -11,10 +9,11 @@
 
 #define BUTTON_1 A1
 #define BUTTON_2 A0
-#define BUTTON_3 A2
+#define BUTTON_3 A3 
+// A2
 #define BUTTON_4 A3
 
-#define MODES 6
+#define MODES 5
 
 CRGB leds[NUM_LEDS];
 
@@ -34,6 +33,9 @@ int cylonMin = 0;
 int cylonMax = NUM_LEDS;
 int cylon = 0;
 int cylonAdder = 1;
+
+int globalHue = 0;
+int haloTexture = 0;
 
 unsigned cautionCounter = 0;
 int cautionIntro = 0;
@@ -111,21 +113,11 @@ void loop()
     }
     if (mode == 3)
     {
-     CautionTape();
+     Halo();
     }
-//    if (mode == 4)
-//    {
-//      CautionTape();
-//    }
     if (mode == 4)
     {
-      // eye image
-      imageRender(EYE_IMG_WIDTH, EYE_IMG_HEIGHT, eye_map);
-    }
-    if (mode == 5)
-    {
-      // imageRender(FLIPPY_IMG_WIDTH, FLIPPY_IMG_HEIGHT, flippy_img);
-      imageRender(NGPC_IMG_WIDTH, NGPC_IMG_HEIGHT, ngpc_image);
+      SolidColour();
     }
 //    if (mode == 6)
 //    {
@@ -268,6 +260,66 @@ void RainbowLED()
   {
     blackOut();
   }
+}
+
+void Halo()
+{
+  int key1S = digitalRead(BUTTON_1);// read if key1 is pressed
+  if(!key1S){
+    
+    for( int i = 0; i < NUM_LEDS - 3; i++) {
+      leds[i].setHSV( globalHue, 255, min( ( i * 6), 255)); //.setRGB(0,0,min( ( i * 6), 255));
+    }
+
+
+
+    // bright end strip
+    for (int i = NUM_LEDS - 3; i < NUM_LEDS; i++) {
+      leds[i].setHSV( globalHue, 255, 255 );
+    }
+    haloTexture = ( haloTexture + 1 ) % 20;
+    
+    for (int i = NUM_LEDS - 15; i < NUM_LEDS - 5; i++)
+    {
+      leds[i].fadeToBlackBy(min(255, abs(haloTexture - 10) * 25));
+    }
+
+    
+  }
+  else
+  {
+    blackOut();
+  }
+
+  UpdateHue();
+}
+
+void UpdateHue()
+{
+  int key3S = digitalRead(BUTTON_3);// read if key3 is pressed
+  if(!key3S){
+    globalHue = ( globalHue + 1 ) % 255;
+    for (int i = 0; i < 3; i++) {
+      leds[i].setHSV( globalHue, 255, 255 );
+    }
+  }
+}
+
+void SolidColour()
+{
+  int key1S = digitalRead(BUTTON_1);// read if key1 is pressed
+  if(!key1S){
+    // bright end strip
+    for (int i = 0; i < NUM_LEDS; i++) {
+      leds[i].setHSV( globalHue, 255, 255 );
+    }
+  }
+  else
+  {
+    blackOut();
+  }
+
+  UpdateHue();
 }
 
 void Cylon()
